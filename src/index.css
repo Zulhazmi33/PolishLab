@@ -1,0 +1,48 @@
+@import "tailwindcss";
+/* REQUIRED for class-based dark mode toggle */
+@custom-variant dark (&:where(.dark, .dark *));
+
+html, body {
+  transition:
+    background-color 300ms ease,
+    color 300ms ease;
+}
+* {
+  transition:
+    background-color 300ms ease,
+    color 300ms ease,
+    border-color 300ms ease,
+    fill 300ms ease,
+    stroke 300ms ease;
+}
+
+/* light-mode/default */
+@theme {
+  --color-primary: #111827;     /* richer slate */
+  --color-secondary: #10b981;   /* emerald-500 */
+
+  --color-body: #fafafa;
+  --color-selected: #ecfdf5;
+
+  --color-surface: #ffffff;
+  --color-border: #e5e7eb;
+
+  --color-title: #fafafa;
+  --color-muted: #64748b;
+  --color-accent: #047857;
+}
+/* dark-mode/default */
+.dark {
+  --color-primary: #34d399;
+  --color-secondary: #10b981;
+
+  --color-body: #09090b;
+  --color-selected: #10261d;
+
+  --color-surface: #111827;
+  --color-border: #27272a;
+
+  --color-title: #111827;
+  --color-muted: #94a3b8;
+  --color-accent: #6ee7b7;
+}

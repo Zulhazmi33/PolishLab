@@ -1,0 +1,62 @@
+import { useState } from "react";
+import Header from "./components/Header"
+import Sidebar from "./components/Sidebar";
+import TabBar from "./components/TabBar";
+import { Route, Routes, useLocation } from "react-router-dom";
+import Home from "./pages/Home";
+import Setting from "./pages/Setting";
+
+function App() {
+
+  // ------------------------------------------ 1) Sidebar ------------------------------------------
+    // useState
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);  
+    // ON
+    const openSidebar = () => {
+      setIsSidebarOpen(!isSidebarOpen)
+    }
+    // OFF
+    const closeSidebar = () => {
+      setIsSidebarOpen(false)
+    }  
+
+
+    // ------------------------------------------ 3) authentication ------------------------------------------
+      const location = useLocation();
+      const isLoginPage = location.pathname === "/login";
+      
+  
+  return (
+    <>      
+      <div className="min-h-screen bg-body">
+      {!isLoginPage && (
+        <>
+          <Header onMenuClick={openSidebar} isSidebarOpen={isSidebarOpen}/>
+
+          {/* Sidebar: md and above only */}
+          <div className="hidden md:block">
+            <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
+          </div>
+
+          {/* TabBar: mobile only */}
+          <div className="block md:hidden">
+            <TabBar />
+          </div>
+        </>
+      )}
+
+        {/* IMPORTANT: push content below fixed header */}
+        <main className={isLoginPage ? "" : "pt-24 pb-20"}>
+          <Routes>
+            <Route path="/home" element={<Home />} />
+            <Route path="/setting" element={<Setting />} />
+          </Routes>
+        </main>
+      </div>
+
+    </>
+  )
+
+}
+
+export default App
