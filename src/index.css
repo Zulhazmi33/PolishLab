@@ -17,7 +17,7 @@ html, body {
 }
 
 /* light-mode/default */
-@theme {
+.dark{
   --color-primary: #111827;     /* richer slate */
   --color-secondary: #10b981;   /* emerald-500 */
 
@@ -32,7 +32,7 @@ html, body {
   --color-accent: #047857;
 }
 /* dark-mode/default */
-.dark {
+@theme {
   --color-primary: #34d399;
   --color-secondary: #10b981;
 

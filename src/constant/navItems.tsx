@@ -1,4 +1,4 @@
-import { HomeIcon, ParagraphIcon, ResumeIcon, TrackingIcon, SettingIcon } from "../assets/SVG/Sidebar_icon";
+import { HomeIcon, ParagraphIcon, ResumeIcon, BudgetIcon, SettingIcon } from "../assets/SVG/Sidebar_icon";
 
 export type NavItem = {
   href: string;
@@ -10,6 +10,6 @@ export const navItems: NavItem[] = [
   { href: "/home",        label: "Home",        icon: <HomeIcon /> },
   { href: "/paragraph",   label: "Paragraph",   icon: <ParagraphIcon /> },
   { href: "/resume",      label: "Resume",      icon: <ResumeIcon /> },
-  { href: "/tracking", label: "Tracking", icon: <TrackingIcon /> },
+  { href: "/budget",      label: "Budget",      icon: <BudgetIcon /> },
   { href: "/setting",  label: "Setting",  icon: <SettingIcon /> },
 ];

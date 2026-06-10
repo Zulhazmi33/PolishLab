@@ -2,16 +2,18 @@ import { useState } from "react";
 import Grid from "../components/ui/Grid";
 import { rewriteText } from "../gemini";
 
+type Tone = "professional" | "friendly";
 const Paragraph: React.FC = () => {
-    type Tone = "professional" | "formal" | "friendly" | "job_application";
 
     const [input, setInput] = useState("");
     const [output, setOutput] = useState("");
     const [loading, setLoading] = useState(false);
-    const [tone, setTone] = useState<Tone>("professional");
+    const [tone, setTone] = useState<Tone>("professional"); // tone
+    const [copied, setCopied] = useState(false); // copy
 
 // me want job software engineer no experience but fast learner
 
+    // 1) refine the paragraph
     const handleRewrite = async () => {
         setLoading(true);
         setOutput("");
@@ -25,6 +27,20 @@ const Paragraph: React.FC = () => {
             console.log('error = ',error)
             // console.log('error = ',error.response?.message)
             // alert('❌ '+error.response?.message)
+        }
+    };
+
+    // 2) copy output
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(output);
+            setCopied(true);
+
+            setTimeout(() => {
+                setCopied(false);
+            }, 2000);
+        } catch (error) {
+            console.error("Failed to copy:", error);
         }
     };
     
@@ -42,7 +58,7 @@ const Paragraph: React.FC = () => {
                         <h1 className="text-3xl font-bold text-primty dark:text-accent">
                             Professional Text Corrector
                         </h1>
-                        <p className="mt-2 text-sm text-muted">
+                        <p className=" mt-2 text-sm text-muted">
                             Paste your text and choose a tone to improve it instantly.
                         </p>
                     </div>
@@ -57,8 +73,8 @@ const Paragraph: React.FC = () => {
                             </label>
                             <textarea
                                 rows={6}
-                                className="w-full rounded-xl border border-border bgbody text-primary dark:text-white placeholder:text-muted p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-secondary"
-                                placeholder="Paste your resume or text here..."
+                                className="w-full rounded-xl border border-border bg-gray-100 text-primary dark:text-white placeholder:text-muted p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-secondary"
+                                placeholder="Paste your paragraph or sentence here..."
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                             />
@@ -73,12 +89,10 @@ const Paragraph: React.FC = () => {
                                 <select
                                     value={tone}
                                     onChange={(e) => setTone(e.target.value as Tone)}
-                                    className="w-full rounded-xl border border-border bgbody text-primary dark:text-white text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer"
+                                    className="w-full rounded-xl border border-border bg-gray-100 text-primary dark:text-white text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer"
                                 >
                                     <option value="professional">Professional</option>
-                                    <option value="formal">Formal</option>
                                     <option value="friendly">Friendly</option>
-                                    <option value="job_application">Job Application</option>
                                 </select>
                             </div>
 
@@ -105,9 +119,19 @@ const Paragraph: React.FC = () => {
                     {/* Output */}
                     {output && (
                         <div className="mt-6 bg-selected border border-border rounded-2xl p-6">
-                            <p className="text-xs font-semibold uppercase tracking-widest text-secondary mb-3">
-                                Result
-                            </p>
+                            <div className="flex items-center justify-between mb-3">
+                                <p className="text-xs font-semibold uppercase tracking-widest text-secondary">
+                                    Result
+                                </p>
+
+                                <button
+                                    onClick={handleCopy}
+                                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-white transition cursor-pointer"
+                                >
+                                    {copied ? "✓ Copied" : "Copy"}
+                                </button>
+                            </div>
+
                             <pre className="text-sm text-primary dark:text-white whitespace-pre-wrap leading-relaxed font-sans">
                                 {output}
                             </pre>

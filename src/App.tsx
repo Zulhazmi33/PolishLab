@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import Setting from "./pages/Setting";
 import Paragraph from "./pages/Paragraph";
 import Resume from "./pages/Resume";
+import Budget from "./pages/Budget";
 
 function App() {
 
@@ -54,6 +55,7 @@ function App() {
             <Route path="/home" element={<Home />} />
             <Route path="/paragraph" element={<Paragraph />} />
             <Route path="/resume" element={<Resume />} />
+            <Route path="/budget" element={<Budget />} />
             <Route path="/setting" element={<Setting />} />
           </Routes>
         </main>
