@@ -5,6 +5,8 @@ import TabBar from "./components/TabBar";
 import { Route, Routes, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Setting from "./pages/Setting";
+import Paragraph from "./pages/Paragraph";
+import Resume from "./pages/Resume";
 
 function App() {
 
@@ -48,7 +50,10 @@ function App() {
         {/* IMPORTANT: push content below fixed header */}
         <main className={isLoginPage ? "" : "pt-24 pb-20"}>
           <Routes>
+            <Route path="/" element={<Home />} />
             <Route path="/home" element={<Home />} />
+            <Route path="/paragraph" element={<Paragraph />} />
+            <Route path="/resume" element={<Resume />} />
             <Route path="/setting" element={<Setting />} />
           </Routes>
         </main>
