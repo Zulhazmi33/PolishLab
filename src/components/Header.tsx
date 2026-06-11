@@ -8,7 +8,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarOpen }) => {
 
-
+    console.log('test = ',localStorage.getItem('theme'))
     return (
         <div>
             <header className="bg-primary shadow-md fixed top-0 left-0 right-0 z-40 h-16 border border-border">
@@ -28,11 +28,20 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarOpen }) => {
                             </button>
                         </div>
                         {/* b) image */}
-                        {/* <img
-                            src="/buyMe_rectangle.png"
-                            alt="BuyMe logo"
-                            className="h-14 object-cover"
-                        /> */}
+                        {localStorage.getItem('theme')=='light' ? (
+                            <img
+                                src="/RefineLab_rectangle_dark.png"
+                                alt="BuyMe logo"
+                                className="h-14 object-cover"
+                            />
+                        ) : (
+
+                            <img
+                                src="/RefineLab_rectangle_light.png"
+                                alt="BuyMe logo"
+                                className="h-14 object-cover"
+                            />
+                        )}
                     </div>
 
                 </div>

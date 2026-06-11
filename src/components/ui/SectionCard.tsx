@@ -215,35 +215,39 @@ export default function SectionCard({ resume }: Props) {
   );
 }
 
-const toBulletPoints = (text: string) => {
-  return text
-    .split(". ")
-    .map(item => item.trim())
-    .filter(Boolean)
-    .map(item =>
-      item.endsWith(".") ? item : item + "."
-    );
-};
-// consider every subdata scenario for 'skill' section
-function getSkillList(skills: any[] = []) {
-  return skills.map((skill) => {
-    const list =
-      skill.list ??
-      skill.items ??
-      skill.keywords ??
-      skill.keyword ??
-      [];
 
-    return {
-      category: skill.category ?? "Other",
-      list: Array.isArray(list)
-        ? list
-        : typeof list === "string"
-        ? [list]
-        : [],
-    };
-  });
-}
-function getSkillTitle(skill: any): string {
-  return skill.category ?? skill.name ?? "Unknown";
-}
+// ------------------------------------------ 1) functions ------------------------------------------
+  // a) bullet point
+  const toBulletPoints = (text: string) => {
+    return text
+      .split(". ")
+      .map(item => item.trim())
+      .filter(Boolean)
+      .map(item =>
+        item.endsWith(".") ? item : item + "."
+      );
+  };
+  // b) consider every subdata scenario for 'category' section
+  function getSkillTitle(skill: any): string {
+    return skill.category ?? skill.name ?? "Unknown";
+  }
+  // c) consider every subdata scenario for 'skill' section
+  function getSkillList(skills: any[] = []) {
+    return skills.map((skill) => {
+      const list =
+        skill.list ??
+        skill.items ??
+        skill.keywords ??
+        skill.keyword ??
+        [];
+
+      return {
+        category: skill.category ?? "Other",
+        list: Array.isArray(list)
+          ? list
+          : typeof list === "string"
+          ? [list]
+          : [],
+      };
+    });
+  }

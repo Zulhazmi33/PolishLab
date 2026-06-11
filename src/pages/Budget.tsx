@@ -155,8 +155,8 @@ const Budget: React.FC = () => {
 
 
     // ------------------------------------------ 4) tone ------------------------------------------
-        // type Tone = "professional" | "simple";
-        const [tone, setTone] = useState('professional')
+        type Tone = "professional" | "simple";
+        const [tone, setTone] = useState<Tone>('professional')
 
 
     // ------------------------------------------ 5) copy result ------------------------------------------
@@ -283,7 +283,7 @@ const Budget: React.FC = () => {
                                         <p className="text-xs text-muted">Type of advise</p>
                                         <select
                                             value={tone}
-                                            onChange={(e) => { setTone(e.target.value) }}
+                                            onChange={(e) => { setTone(e.target.value as Tone) }}
                                             className="text-xs text-primary bg-transparent border-b border-dashed border-muted focus:outline-none focus:border-primary cursor-pointer hover:border-primary transition-colors"
                                         >
                                             <option value="professional">Professional</option>
@@ -367,7 +367,8 @@ const Budget: React.FC = () => {
                         <div className="bg-body border border-border rounded-xl p-4">
                             <p className="text-xs text-muted uppercase tracking-wide mb-1">Total spent</p>
                             <p className="text-2xl font-medium text-primary">
-                                RM {total.toFixed(2)}
+                                {/* RM {total.toFixed(2)} */}
+                                RM {total}
                             </p>
                         </div>
                         <div className="bg-body border border-border rounded-xl p-4">
@@ -455,7 +456,8 @@ const Budget: React.FC = () => {
                                         <tr className="border-t-2 border-border bg-body">
                                             <td colSpan={2} className="px-5 py-3 text-sm font-medium text-muted">Total</td>
                                             <td className="px-5 py-3 text-right text-sm font-medium text-primary tabular-nums">
-                                                {total.toFixed(2)}
+                                                {/* {total.toFixed(2)} */}
+                                                {total}
                                             </td>
                                         </tr>
                                     </tfoot>
@@ -504,7 +506,8 @@ const Budget: React.FC = () => {
                             {!loading && budget.length > 0 && (
                                 <div className="flex items-center justify-between px-4 py-3 bg-primary">
                                     <span className="text-sm font-medium text-title">Total</span>
-                                    <span className="text-sm font-medium text-title tabular-nums">RM {total.toFixed(2)}</span>
+                                    {/* <span className="text-sm font-medium text-title tabular-nums">RM {total.toFixed(2)}</span> */}
+                                    <span className="text-sm font-medium text-title tabular-nums">RM {total}</span>
                                 </div>
                             )}
                         </div>
