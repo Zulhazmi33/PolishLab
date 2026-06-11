@@ -22,17 +22,11 @@ function App() {
     const closeSidebar = () => {
       setIsSidebarOpen(false)
     }  
-
-
-    // ------------------------------------------ 3) authentication ------------------------------------------
-      const location = useLocation();
-      const isLoginPage = location.pathname === "/login";
       
   
   return (
     <>      
       <div className="min-h-screen bg-body">
-      {!isLoginPage && (
         <>
           <Header onMenuClick={openSidebar} isSidebarOpen={isSidebarOpen}/>
 
@@ -46,10 +40,9 @@ function App() {
             <TabBar />
           </div>
         </>
-      )}
 
         {/* IMPORTANT: push content below fixed header */}
-        <main className={isLoginPage ? "" : "pt-24 pb-20"}>
+        <main className="pt-24 pb-20">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/home" element={<Home />} />

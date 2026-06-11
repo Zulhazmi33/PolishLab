@@ -12,19 +12,19 @@ export default defineConfig({
       registerType: 'autoUpdate',
 
       manifest: {
-        name: 'PolishLab',
-        short_name: 'PolishLab',
+        name: 'RefineLab',
+        short_name: 'RefineLab',
         description: 'Simple ai integration app',
         theme_color: '#ffffff',
 
         icons: [
           {
-            src: 'favicon.svg',
+            src: 'RefineLab_square.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'favicon.svg',
+            src: 'RefineLab_square.png',
             sizes: '512x512',
             type: 'image/png'
           }
