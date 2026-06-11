@@ -25,15 +25,17 @@ const Budget: React.FC = () => {
                 const text = await res.text();
                 const jsonString = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
                 const data = JSON.parse(jsonString);
-                const rows = data.table.rows;
 
-                const formatted = rows.map((row: any) => ({
+                const formatted = data.table.rows
+                .slice(0, 5) // only first 5 rows
+                .map((row: any) => ({
                     date: parseGvizDate(row.c[0]?.v),
                     expense: Number(row.c[1]?.v || 0).toFixed(2),
                     reason: String(row.c[2]?.v || ""),
                 }));
                 setBudget(formatted);
             } catch (err) {
+                alert('❌ Quota reached')
                 console.error(err);
             } finally {
                 setLoading(false);
@@ -49,13 +51,14 @@ const Budget: React.FC = () => {
             <div style={{ maxWidth: 800, margin: "0 auto", padding: "2rem 0", fontFamily: "var(--font-sans)" }}>
 
                 {/* 1) Header */}
+                <div>
                     <div className="flex items-center gap-2.5 mb-1">
                         <h2 className="text-xl font-medium text-primary m-0">Budget tracker</h2>
                     </div>
                     <p className="text-sm text-muted mb-6">
                         Expenses pulled live from Google Sheets.
                     </p>
-
+                </div>
                 {/* 2) AI advisor */}
                     <div className="bg-surface border border-border rounded-xl p-5 mb-4">
                         <div className="flex items-center justify-between gap-3 flex-wrap">

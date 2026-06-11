@@ -8,7 +8,6 @@ const MODELS = {
 const MODEL = MODELS.cheap;
 
 
-
 // 1) for 'Paragraph' page
 type Tone = "professional" | "friendly";
 export async function rewriteText(input: string, tone: Tone = "professional") {
@@ -117,11 +116,11 @@ export async function parseResume(input: string) {
     - ...
 
     # USER RESUME
-${input}
-`;
+    ${input}
+  `;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
     {
       method: "POST",
       headers: {
@@ -191,7 +190,8 @@ export async function analyzeBudget(budget: any[], location = "Malaysia") {
 `;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`,
+    // `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
