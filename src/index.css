@@ -27,6 +27,8 @@ html, body {
   --color-surface: #ffffff;
   --color-border: #e5e7eb;
 
+  --color-reversed: #000000;
+
   --color-title: #fafafa;
   --color-muted: #64748b;
   --color-accent: #047857;
@@ -42,6 +44,8 @@ html, body {
 
   --color-surface: #111827;
   --color-border: #27272a;
+
+  --color-reversed: #ffffff;
 
   --color-title: #111827;
   --color-muted: #94a3b8;

@@ -84,42 +84,6 @@ export async function rewriteText(input: string, tone: Tone = "professional") {
 
 // 2) for 'Resume' page
 export async function parseResume(input: string) {
-  const prompt = `
-    You are a resume parser AI.
-
-    Your job is to extract structured information from a resume and organize it into sections.
-
-    # RULES
-    - Do NOT invent information
-    - Only use what exists in the text
-    - If section is missing, write "Not provided"
-
-    # OUTPUT FORMAT (VERY IMPORTANT)
-
-    Return in this exact format:
-
-    Work Experience:
-    - ...
-
-    Education:
-    - ...
-
-    Skills:
-    - ...
-
-    Projects:
-    - ...
-
-    Certifications:
-    - ...
-
-    Other:
-    - ...
-
-    # USER RESUME
-    ${input}
-  `;
-
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
     {
@@ -128,14 +92,52 @@ export async function parseResume(input: string) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        systemInstruction: {
+          parts: [
+            {
+              text: `
+                You are a resume parser.
+
+                Extract information exactly as written in the resume.
+
+                Rules:
+                - Do not infer, summarize, rewrite, normalize, or generate information.
+                - Only extract information explicitly present in the resume.
+                - Preserve original wording where possible.
+                - If a section is missing, return an empty array.
+                - Return valid JSON only.
+                - No markdown.
+                - No explanations.
+
+                Expected JSON structure:
+
+                {
+                  "workExperience": [],
+                  "education": [],
+                  "skills": [],
+                  "projects": [],
+                  "certifications": [],
+                  "other": []
+                }
+              `,
+            },
+          ],
+        },
+
         contents: [
           {
             role: "user",
-            parts: [{ text: prompt }],
+            parts: [
+              {
+                text: input,
+              },
+            ],
           },
         ],
+
         generationConfig: {
-          temperature: 0.2,
+          temperature: 0,
+          responseMimeType: "application/json",
         },
       }),
     }
@@ -144,10 +146,12 @@ export async function parseResume(input: string) {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(JSON.stringify(data));
+    throw new Error(data?.error?.message ?? "Gemini failed");
   }
 
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  return JSON.parse(
+    data.candidates[0].content.parts[0].text
+  );
 }
 
 // 3) budget financer

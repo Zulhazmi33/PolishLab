@@ -23,12 +23,13 @@ const Budget: React.FC = () => {
 
 
     // ------------------------------------------ 2) budget ------------------------------------------
+        // a) useState
         const [budget, setBudget] = useState<Budget_type[]>([]);
+        const [selectedBudget, setSelectedBudget] = useState<Budget_type[]>([]); //checkbox
         const [monthlyAllowance, setMonthlyAllowance] = useState<string>('0');
         const [monthlyBudget_expected, setMonthlyBudget_expected] = useState<string>('0');
-        // const [monthlyBudget_reality, setMonthlyBudget_reality] = useState<string>('0');
         
-        // fetch budget
+        // b) fetch budget
         useEffect(() => {
             const fetchData = async () => {
                 try {
@@ -40,7 +41,6 @@ const Budget: React.FC = () => {
                     const data = JSON.parse(jsonString);
 
                     const formatted = data.table.rows
-                    .slice(0, 10) // only first 5 rows
                     .map((row: any) => ({
                         date: parseGvizDate(row.c[0]?.v),
                         expense: Number(row.c[1]?.v || 0).toFixed(2),
@@ -56,12 +56,45 @@ const Budget: React.FC = () => {
             };
             fetchData();
         }, []);
+        // c) checkbox
+        const handleSelectBudget = (row: Budget_type) => {
+            setSelectedBudget((prev) => {
+                const exists = prev.some(
+                    item =>
+                        item.date === row.date &&
+                        item.reason === row.reason &&
+                        item.expense === row.expense
+                );
+
+                if (exists) {
+                    return prev.filter(
+                        item =>
+                            !(
+                                item.date === row.date &&
+                                item.reason === row.reason &&
+                                item.expense === row.expense
+                            )
+                    );
+                }
+
+                return [...prev, row];
+            });
+        };
+        // d) select all data
+        const allSelected = budget.length > 0 && selectedBudget.length === budget.length;
+        const handleToggleSelectAll = () => {
+            if (allSelected) {
+                setSelectedBudget([]);
+            } else {
+                setSelectedBudget([...budget]);
+            }
+        };
    
 
     // ------------------------------------------ 3) location ------------------------------------------
         const [selectedState, setSelectedState] = useState("");
         const [selectedDistrict, setSelectedDistrict] = useState("");
-        const total = budget.reduce((sum, row) => sum + Number(row.expense), 0);
+        const total = (selectedBudget.reduce((sum, row) => sum + Number(row.expense), 0)).toFixed(2);
 
         // Derived values from location data
         const states = [...new Set(location.map((l) => l.state))];
@@ -141,6 +174,7 @@ const Budget: React.FC = () => {
                 console.error("Copy failed:", err);
             }
         };
+
 
     return (
         <Grid>
@@ -266,7 +300,7 @@ const Budget: React.FC = () => {
                                 className="flex items-center gap-2 text-sm font-medium text-primary bg-body border border-border rounded-lg px-4 py-2 cursor-pointer hover:bg-selected disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
                                 disabled={
                                     aiLoading ||
-                                    budget.length === 0 ||
+                                    selectedBudget.length === 0 ||
                                     !selectedState ||
                                     !selectedDistrict ||
                                     monthlyAllowance === '0' ||
@@ -282,7 +316,7 @@ const Budget: React.FC = () => {
                                     setAiLoading(true);
                                     setAiAnalysis("");
                                     try {
-                                        const result = await analyzeBudget(budget, selectedState, selectedDistrict, Number(monthlyAllowance), Number(monthlyBudget_expected), Number(total), tone);
+                                        const result = await analyzeBudget(selectedBudget, selectedState, selectedDistrict, Number(monthlyAllowance), Number(monthlyBudget_expected), Number(total), tone);
                                         setAiAnalysis(result);
                                     } catch (err) {
                                         console.error(err);
@@ -337,14 +371,24 @@ const Budget: React.FC = () => {
                             </p>
                         </div>
                         <div className="bg-body border border-border rounded-xl p-4">
-                            <p className="text-xs text-muted uppercase tracking-wide mb-1">Entries</p>
+                            <p className="text-xs text-muted uppercase tracking-wide mb-1">Selected budget</p>
                             <p className="text-2xl font-medium text-primary">
-                                {budget.length}
+                                {selectedBudget.length}
                             </p>
                         </div>
                     </div>
 
-                {/* 4) Table */}
+                {/* 4) Checkbox */}
+                    <div className="flex justify-end mb-4">
+                        <button
+                            onClick={handleToggleSelectAll}
+                            className="w-full text-sm text-primary bg-surface border border-border rounded-lg py-2 cursor-pointer hover:bg-selected transition-colors"
+                        >
+                            {allSelected ? "Unselect All Expense" : "Select All Expense"}
+                        </button>
+                    </div>
+
+                {/* 5) Table */}
                     <div className="bg-surface border border-border rounded-xl overflow-hidden">
 
                         {/* Desktop table — hidden on small screens */}
@@ -372,9 +416,30 @@ const Budget: React.FC = () => {
                                         </tr>
                                     ) : (
                                         budget.map((row, i) => (
+                                            // <tr
+                                            //     key={i}
+                                            //     className="border-b border-border last:border-0 hover:bg-selected transition-colors"
+                                            // >
                                             <tr
                                                 key={i}
-                                                className="border-b border-border last:border-0 hover:bg-selected transition-colors"
+                                                onClick={() => handleSelectBudget(row)}
+                                                className={`
+                                                    cursor-pointer
+                                                    border-b border-border
+                                                    last:border-0
+                                                    hover:bg-selected
+                                                    transition-colors
+                                                    ${
+                                                        selectedBudget.some(
+                                                            item =>
+                                                                item.date === row.date &&
+                                                                item.reason === row.reason &&
+                                                                item.expense === row.expense
+                                                        )
+                                                            ? "bg-selected"
+                                                            : ""
+                                                    }
+                                                `}
                                             >
                                                 <td className="px-5 py-3 text-muted whitespace-nowrap">{row.date}</td>
                                                 <td className="px-5 py-3 text-primary">{row.reason}</td>
@@ -406,7 +471,26 @@ const Budget: React.FC = () => {
                                 <p className="text-center text-sm text-muted py-10 italic">No entries found.</p>
                             ) : (
                                 budget.map((row, i) => (
-                                    <div key={i} className="flex items-start justify-between gap-3 px-4 py-3">
+                                    // <div key={i} className="flex items-start justify-between gap-3 px-4 py-3">
+                                    <div
+                                        key={i}
+                                        onClick={() => handleSelectBudget(row)}
+                                        className={`
+                                            flex items-start justify-between gap-3 px-4 py-3
+                                            cursor-pointer
+                                            transition-colors
+                                            ${
+                                                selectedBudget.some(
+                                                    item =>
+                                                        item.date === row.date &&
+                                                        item.reason === row.reason &&
+                                                        item.expense === row.expense
+                                                )
+                                                    ? "bg-selected"
+                                                    : ""
+                                            }
+                                        `}
+                                    >
                                         <div className="flex flex-col gap-0.5 min-w-0">
                                             <span className="text-sm text-primary truncate">{row.reason}</span>
                                             <span className="text-xs text-muted">{row.date}</span>

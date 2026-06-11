@@ -1,97 +1,110 @@
 export interface ResumeSections {
-  summary: string;
-  experience: string;
-  education: string;
-  skills: string;
-  projects: string;
-  certifications: string;
-  other: string;
+  [section: string]: string;
 }
 
-const HEADERS = [
-  { key: "summary", regex: /career objective/i },
+/**
+ * Detect whether a line looks like a resume section heading
+ */
+function isSectionHeader(line: string): boolean {
+  const cleaned = line.trim();
 
-  {
-    key: "experience",
-    regex:
-      /(internship experience|work experience|professional experience)/i,
-  },
+  if (!cleaned) return false;
 
-  {
-    key: "education",
-    regex: /education/i,
-  },
+  // Ignore very long text
+  if (cleaned.length > 50) return false;
 
-  {
-    key: "skills",
-    regex: /(core expertise|technical skills|skills)/i,
-  },
+  // Ignore bullet points
+  if (
+    cleaned.startsWith("-") ||
+    cleaned.startsWith("•")
+  ) {
+    return false;
+  }
 
-  {
-    key: "projects",
-    regex: /(project experience|projects)/i,
-  },
+  // Ignore dates
+  if (
+    /^\d{4}/.test(cleaned) ||
+    /\d{4}\s*[-–→]/.test(cleaned)
+  ) {
+    return false;
+  }
 
-  {
-    key: "certifications",
-    regex: /(certifications|certificates)/i,
-  },
-] as const;
+  const words = cleaned.split(/\s+/);
 
-function prettifySection(text: string) {
-  return text
-    .replace(/\s*\|\s*/g, "\n") // Project | Tech → new line
-    .replace(/\.\s+/g, ".\n")
-    .replace(/(\d{4}\s*[-→]\s*\d{4})/g, "\n$1")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  // Section titles are usually short
+  if (words.length > 5) return false;
+
+  // Avoid sentence-like content
+  if (
+    cleaned.includes(".") ||
+    cleaned.includes(",")
+  ) {
+    return false;
+  }
+
+  // ALL CAPS
+  const isUpper =
+    cleaned === cleaned.toUpperCase();
+
+  // Title Case
+  const isTitleCase = words.every((word) =>
+    /^[A-Z][a-zA-Z&/-]*$/.test(word)
+  );
+
+  return isUpper || isTitleCase;
 }
 
-export function parseResumeLocally(text: string): ResumeSections {
-    const sections: ResumeSections = {
-        summary: "",
-        experience: "",
-        education: "",
-        skills: "",
-        projects: "",
-        certifications: "",
-        other: "",
-    };
-    const normalized = text
-        .replace(/\r/g, "")
-        .replace(/[ \t]+/g, " ")
-        .replace(/\n +/g, "\n")
-        .replace(/\n{3,}/g, "\n\n")
-        .trim();
+/**
+ * Normalize section key
+ */
+function normalizeSectionName(
+  heading: string
+): string {
+  return heading
+    .toLowerCase()
+    .replace(/[^\w\s]/g, "")
+    .trim()
+    .replace(/\s+/g, "_");
+}
 
-    const matches = HEADERS.map((h) => ({
-        key: h.key,
-        match: normalized.match(h.regex),
-    }))
-        .filter((x) => x.match)
-        .map((x) => ({
-        key: x.key,
-        index: x.match!.index!,
-        header: x.match![0],
-        }))
-        .sort((a, b) => a.index - b.index);
+/**
+ * Parse resume text into detected sections
+ */
+export function parseResumeLocally(
+  text: string
+): ResumeSections {
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 
-    if (matches.length === 0) {
-        sections.other = normalized;
-        return sections;
+  const sections: ResumeSections = {};
+
+  let currentSection = "general";
+
+  sections[currentSection] = "";
+
+  for (const line of lines) {
+    if (isSectionHeader(line)) {
+      const sectionName =
+        normalizeSectionName(line);
+
+      currentSection = sectionName;
+
+      if (!sections[currentSection]) {
+        sections[currentSection] = "";
+      }
+
+      continue;
     }
 
-    for (let i = 0; i < matches.length; i++) {
-        const current = matches[i];
-        const next = matches[i + 1];
+    sections[currentSection] += line + "\n";
+  }
 
-        const start = current.index + current.header.length;
-        const end = next ? next.index : normalized.length;
-        sections[current.key] = prettifySection(
-            normalized.slice(start, end)
-        );
-
-    }
+  // cleanup whitespace
+  Object.keys(sections).forEach((key) => {
+    sections[key] = sections[key].trim();
+  });
 
   return sections;
 }

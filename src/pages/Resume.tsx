@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback } from "react";
 import Grid from "../components/ui/Grid";
 import { pdfToText } from "../util/pdfToText";
-import { parseResumeLocally } from "../util/resumeParser";
 import SectionCard from "../components/ui/SectionCard";
+import { parseResume } from "../gemini";
 
 const Resume: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -36,14 +36,34 @@ const Resume: React.FC = () => {
 
     try {
       const text = await pdfToText(file);
-      const sections = parseResumeLocally(text);
+      const key = "resume:" + await hashText(text);
 
-      // console.log('RAW PDF TEXT = ',text);
-      // console.log("SECTIONS = ", sections);
+      const cached = localStorage.getItem(key);
 
-      setResume(sections);
-    } catch (err) {
-      console.error(err);
+      if (cached) {
+        console.log("Loaded from cache");
+
+        const section = JSON.parse(cached);
+        setResume(section)
+        console.log(section);
+
+        return;
+      }
+      else {
+        console.log('new data')
+      }
+
+      const section = await parseResume(text);
+      console.log('section = ',section)
+      setResume(section)
+
+      localStorage.setItem(
+        key,
+        JSON.stringify(section)
+      );
+
+      console.log('section = ',section);
+
     } finally {
       setLoading(false);
     }
@@ -140,39 +160,9 @@ const Resume: React.FC = () => {
           <label className="block text-xs font-medium uppercase tracking-wide text-muted mb-2.5">
             Structured output
           </label>
-          {resume && (
-            <>
-              <SectionCard
-                title="Work Experience"
-                content={resume.experience}
-                enableAi
-              />
-
-              <SectionCard
-                title="Education"
-                content={resume.education}
-                enableAi
-              />
-
-              <SectionCard
-                title="Skills"
-                content={resume.skills}
-                enableAi
-              />
-
-              <SectionCard
-                title="Projects"
-                content={resume.projects}
-                enableAi
-              />
-
-              <SectionCard
-                title="Certifications"
-                content={resume.certifications}
-                enableAi
-              />
-            </>
-          )}
+          <div className="max-w-5xl mx-auto p-6">
+            <SectionCard resume={resume} />
+          </div>
         </div>
 
       </div>
@@ -181,3 +171,15 @@ const Resume: React.FC = () => {
 };
 
 export default Resume;
+
+
+async function hashText(text: string) {
+  const data = new TextEncoder().encode(text);
+
+  const hashBuffer =
+    await crypto.subtle.digest("SHA-256", data);
+
+  return [...new Uint8Array(hashBuffer)]
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
