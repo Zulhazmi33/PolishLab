@@ -16,7 +16,7 @@ export async function rewriteText(input: string, tone: Tone = "professional") {
 
     Your job is to improve and rewrite user text to make it more effective in communication.
 
-    # GOAL
+    # 1) GOAL
     Rewrite the text while preserving the original meaning, while improving:
     - clarity
     - grammar
@@ -24,9 +24,10 @@ export async function rewriteText(input: string, tone: Tone = "professional") {
     - readability
     - structure
 
-    # TONE
+    # 2a) TONE
     Tone: ${tone}
 
+    # 2b) TONE TYPE
     Adjust the writing style accordingly:
     - professional → polished, concise, business-appropriate communication
     - friendly → warm, polite, and conversational while remaining professional
@@ -150,60 +151,230 @@ export async function parseResume(input: string) {
 }
 
 // 3) budget financer
-export async function analyzeBudget(budget: any[], location = "Malaysia") {
-  const total = budget.reduce((sum, b) => sum + Number(b.expense), 0);
+export async function analyzeBudget(
+  budget: any[],
+  state: string,
+  district: string,
+  allowance: number,
+  budget_expected: number,
+  budget_reality: number,
+  tone: "professional" | "simple"
+) {
+  const total = budget.reduce(
+    (sum, b) => sum + Number(b.expense),
+    0
+  );
 
-  const categories = budget.reduce((acc: any, item) => {
-    const key = item.reason?.toLowerCase() || "other";
+  const categories = budget.reduce((acc: Record<string, number>, item) => {
+    const key = item.reason?.toLowerCase()?.trim() || "other";
+
     acc[key] = (acc[key] || 0) + Number(item.expense);
+
     return acc;
   }, {});
 
+  const toneInstruction =
+    tone === "simple"
+      ? `
+        RESPONSE STYLE: SIMPLE
+
+        - Keep response under 180 words
+        - Use short sentences
+        - Be compact but useful
+        - Avoid financial jargon
+        - Use concise bullets
+        - Focus only on major findings
+        `
+      : `
+        RESPONSE STYLE: PROFESSIONAL
+
+        - Give detailed analysis
+        - Explain reasoning briefly
+        - Keep response under 450 words
+        - Sound like a financial advisor
+        - Still remain easy to read
+      `;
+
   const prompt = `
-    You are a financial advisor AI.
+    You are an experienced Malaysian personal financial advisor.
 
-    Analyze the user's spending behavior and give practical advice.
+    Your goal is to analyze spending behaviour and provide practical budgeting advice.
 
-    # CONTEXT
-    Location: ${location}
+    ${toneInstruction}
 
-    # SUMMARY DATA
-    Total spending: RM ${total}
-    Number of transactions: ${budget.length}
+    # LOCATION
 
-    # CATEGORY BREAKDOWN
+    Country: Malaysia
+    State: ${state}
+    District: ${district}
+
+    Use location ONLY as broad cost-of-living context.
+
+    Do NOT:
+    - pretend to know exact prices
+    - assume financial status
+
+    # USER DATA
+
+    Monthly Income / Allowance:
+    RM ${allowance}
+
+    Expected Monthly Budget:
+    RM ${budget_expected}
+
+    Actual Monthly Spending:
+    RM ${budget_reality}
+
+    Calculated Total:
+    RM ${total}
+
+    Transaction Count:
+    ${budget.length}
+
+    # SPENDING BREAKDOWN
+
     ${JSON.stringify(categories, null, 2)}
 
-    # RULES
-    - Be honest but not judgmental
-    - Do NOT assume income
-    - Do NOT give investment advice
-    - Focus on spending behavior
-    - Consider cost of living in ${location}
+    # REQUIRED ANALYSIS
+
+    1. Compare:
+    - Income vs actual spending
+    - Expected budget vs actual spending
+
+    2. Determine:
+    - Surplus or deficit
+    - Budget variance
+    - Spending ratio:
+    (Actual Spending ÷ Income) × 100
+
+    3. Identify:
+    - Largest spending categories
+    - Stable habits
+    - Potential concerns
+
+    4. Evaluate spending level relative to:
+    ${district}, ${state}, Malaysia
+
+    Classify:
+    LOW
+    MEDIUM
+    HIGH
+
+    Use broad judgement only.
+
+    # ADVICE RULES
+
+    - Be factual
+    - Be supportive
+    - No investment advice
+    - No debt recommendations
+    - No guilt or shame
+    - Focus on budgeting habits
+
+    # PRESENTATION RULES
+
+    Make output visually pleasant.
+
+    Formatting:
+    - NO markdown headings (##)
+    - NO bold (**)
+    - NO tables
+    - Use section titles only
+    - Short paragraphs
+    - Leave empty lines between sections
+    - Maximum 1 emoji per section
+    - Avoid repeating numbers excessively
 
     # OUTPUT FORMAT
-    Return:
-    1. Spending summary (1-2 lines)
-    2. Spending habits analysis
-    3. 3 practical suggestions
-    4. Risk level (Low / Medium / High)
-`;
+
+    📊 Financial Snapshot
+
+    Income: RM X
+    Expected Budget: RM X
+    Actual Spending: RM X
+    Difference: RM X surplus/deficit
+
+    One short summary.
+
+    ────────────────
+
+    💸 Spending Insights
+
+    Explain:
+    - biggest expense areas
+    - alignment with budget
+    - spending behaviour
+
+    Max 2 short paragraphs.
+
+    ────────────────
+
+    📍 Cost of Living Context
+
+    Result:
+    LOW / MEDIUM / HIGH
+
+    Short explanation.
+
+    ────────────────
+
+    ✅ Recommendations
+
+    Exactly 3 actions.
+
+    Format:
+
+    • Action
+    → Reason
+
+    ────────────────
+
+    ⚠️ Financial Risk
+
+    Return ONE:
+    LOW
+    MEDIUM
+    HIGH
+
+    Short explanation.
+
+    Risk Guide:
+
+    LOW:
+    Spending comfortably below income.
+
+    MEDIUM:
+    Spending close to income or inconsistent.
+
+    HIGH:
+    Spending exceeds income or exceeds expected budget significantly.
+  `;
 
   const response = await fetch(
-    // `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`,
     `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         contents: [
           {
             role: "user",
-            parts: [{ text: prompt }],
+            parts: [
+              {
+                text: prompt,
+              },
+            ],
           },
         ],
         generationConfig: {
-          temperature: 0.3,
+          temperature: tone === "simple" ? 0.2 : 0.3,
+          topP: 0.9,
+          maxOutputTokens:
+            tone === "simple"
+              ? 500
+              : 1000,
         },
       }),
     }
@@ -212,8 +383,14 @@ export async function analyzeBudget(budget: any[], location = "Malaysia") {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(JSON.stringify(data));
+    throw new Error(
+      data?.error?.message ||
+        JSON.stringify(data)
+    );
   }
 
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  return (
+    data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+    "Unable to generate analysis."
+  );
 }

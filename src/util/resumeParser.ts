@@ -8,34 +8,6 @@ export interface ResumeSections {
   other: string;
 }
 
-// const HEADERS = [
-//   { key: "summary", regex: /(summary|objective|profile)/i },
-
-//   {
-//     key: "experience",
-//     regex: /(work experience|experience|employment history|professional background)/i,
-//   },
-
-//   {
-//     key: "education",
-//     regex: /(education|academic background|qualifications)/i,
-//   },
-
-//   {
-//     key: "skills",
-//     regex: /(skills|technical skills|core competencies|tech stack)/i,
-//   },
-
-//   {
-//     key: "projects",
-//     regex: /(projects|project experience|portfolio)/i,
-//   },
-
-//   {
-//     key: "certifications",
-//     regex: /(certifications|certificates|licenses)/i,
-//   },
-// ] as const;
 const HEADERS = [
   { key: "summary", regex: /career objective/i },
 
@@ -74,13 +46,6 @@ function prettifySection(text: string) {
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
-// function prettifySection(text: string) {
-//   return text
-//     .replace(/\s*\|\s*/g, "\n")
-//     .replace(/\n{3,}/g, "\n\n")
-//     .trim();
-// }
-
 
 export function parseResumeLocally(text: string): ResumeSections {
     const sections: ResumeSections = {
@@ -92,13 +57,6 @@ export function parseResumeLocally(text: string): ResumeSections {
         certifications: "",
         other: "",
     };
-
-    // normalize PDF output
-    // const normalized = text
-    //     .replace(/\r/g, "")
-    //     .replace(/[ \t]+/g, " ")
-    //     .replace(/\n{2,}/g, "\n")
-    //     .trim();
     const normalized = text
         .replace(/\r/g, "")
         .replace(/[ \t]+/g, " ")

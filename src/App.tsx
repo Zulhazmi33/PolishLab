@@ -2,7 +2,7 @@ import { useState } from "react";
 import Header from "./components/Header"
 import Sidebar from "./components/Sidebar";
 import TabBar from "./components/TabBar";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Setting from "./pages/Setting";
 import Paragraph from "./pages/Paragraph";
