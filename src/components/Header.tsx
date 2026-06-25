@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sidebar_closeIcon, Sidebar_openIcon } from '../assets/SVG/General_icon';
 
 interface HeaderProps {
@@ -7,8 +7,21 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarOpen }) => {
+    const [isDark, setIsDark] = useState(
+        document.documentElement.classList.contains("dark")
+    );
 
-    console.log('test = ',localStorage.getItem('theme'))
+    useEffect(() => {
+        const observer = new MutationObserver(() => {
+            setIsDark(document.documentElement.classList.contains("dark"));
+        });
+
+        observer.observe(document.documentElement, {
+            attributeFilter: ["class"],
+        });
+
+        return () => observer.disconnect();
+    }, []);
     return (
         <div>
             <header className="bg-primary shadow-md fixed top-0 left-0 right-0 z-40 h-16 border border-border">
@@ -28,20 +41,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarOpen }) => {
                             </button>
                         </div>
                         {/* b) image */}
-                        {localStorage.getItem('theme')=='light' ? (
-                            <img
-                                src="/RefineLab_rectangle_dark.png"
-                                alt="BuyMe logo"
-                                className="h-14 object-cover"
-                            />
-                        ) : (
-
-                            <img
-                                src="/RefineLab_rectangle_light.png"
-                                alt="BuyMe logo"
-                                className="h-14 object-cover"
-                            />
-                        )}
+                        <img
+                            src={isDark ? "/RefineLab_rectangle_dark.png" : "/RefineLab_rectangle_light.png"}
+                            alt="FinanceFlow logo"
+                            className="h-14 object-cover"
+                        />
                     </div>
 
                 </div>

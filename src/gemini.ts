@@ -8,7 +8,7 @@ const MODELS = {
 const MODEL = MODELS.cheap;
 
 
-// 1) for 'Paragraph' page
+// 1) 'Paragraph' enhancer page
 type Tone = "professional" | "friendly";
 export async function rewriteText(input: string, tone: Tone = "professional") {
   const prompt = `
@@ -82,7 +82,7 @@ export async function rewriteText(input: string, tone: Tone = "professional") {
   return data?.candidates?.[0]?.content?.parts?.[0]?.text;
 }
 
-// 2) for 'Resume' page
+// 2) 'Resume' scanning page
 export async function parseResume(input: string) {
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
@@ -154,7 +154,7 @@ export async function parseResume(input: string) {
   );
 }
 
-// 3) budget financer
+// 3) 'Budget' analyzer page
 export async function analyzeBudget(
   budget: any[],
   state: string,
@@ -397,4 +397,99 @@ export async function analyzeBudget(
     data?.candidates?.[0]?.content?.parts?.[0]?.text ||
     "Unable to generate analysis."
   );
+}
+
+// 4) 'Chatbot' page
+interface Question_type {
+    question: string,
+    answer: string
+}
+
+export async function matchFAQWithGemini(userQuery: string, faqList: Question_type[]) {
+  const simplifiedList = faqList.map((item, index) => ({
+    id: index,
+    question: item.question,
+  }));
+
+  const prompt = `
+    You are a FAQ matching system.
+
+    Pick ONLY the best matching question.
+
+    Return ONLY JSON:
+    { "id": number }
+
+    User question:
+    ${userQuery}
+
+    FAQ LIST:
+    ${JSON.stringify(simplifiedList)}
+  `;
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [
+              {
+                text: `
+                  You are a strict JSON API.
+                  Return only valid JSON.
+                  No markdown.
+                  No explanation.
+                `,
+              },
+            ],
+          },
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: prompt }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0,
+            topP: 1,
+            maxOutputTokens: 256,
+            responseMimeType: "application/json",
+          },
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!raw) {
+      console.error("Empty Gemini response:", data);
+      return -1;
+    }
+
+    let parsed: { id: number };
+
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      console.error("Failed to parse Gemini JSON:", raw);
+      console.log('err = ',err)
+      return -1;
+    }
+
+    if (typeof parsed.id !== "number") {
+      return -1;
+    }
+
+    return parsed.id;
+  
+  } catch (error) {
+    console.error("Gemini request failed:", error);
+    return -1;
+  }
 }

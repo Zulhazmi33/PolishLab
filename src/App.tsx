@@ -8,6 +8,7 @@ import Setting from "./pages/Setting";
 import Paragraph from "./pages/Paragraph";
 import Resume from "./pages/Resume";
 import Budget from "./pages/Budget";
+import Chatbot from "./pages/Chatbot";
 
 function App() {
 
@@ -49,6 +50,7 @@ function App() {
             <Route path="/paragraph" element={<Paragraph />} />
             <Route path="/resume" element={<Resume />} />
             <Route path="/budget" element={<Budget />} />
+            <Route path="/chatbot" element={<Chatbot />} />
             <Route path="/setting" element={<Setting />} />
           </Routes>
         </main>
